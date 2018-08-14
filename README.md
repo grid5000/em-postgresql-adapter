@@ -9,7 +9,7 @@ IMPORTANT: If you need to use em-postgresql-adapter with ActiveRecord < 3.1 plea
 Edit your Gemfile:
 
     gem 'pg'
-    gem 'em-postgresql-adapter', :git => 'git://github.com/leftbee/em-postgresql-adapter.git'
+    gem 'em-postgresql-adapter', :git => 'git://github.com/grid5000/em-postgresql-adapter.git'
     gem 'rack-fiber_pool',  :require => 'rack/fiber_pool'
     gem 'em-synchrony', :git     => 'git://github.com/igrigorik/em-synchrony.git',
                         :require => ['em-synchrony',
