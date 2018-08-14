@@ -6,7 +6,7 @@ module EM
   module DB
     # Patching our PGConn-based class to wrap async_exec (alias for async_query) calls into Ruby Fibers
     # ActiveRecord 3.1 calls PGConn#async_exec and also PGConn#send_query_prepared (the latter hasn't been patched here yet -- see below)
-    class FiberedPostgresConnection < PGconn
+    class FiberedPostgresConnection < PG::Connection
 
       module Watcher
         def initialize(client, deferrable)
