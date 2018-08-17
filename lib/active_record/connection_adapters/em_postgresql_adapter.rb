@@ -69,7 +69,7 @@ module ActiveRecord
 
         private
           def dummy_conn
-            conn=available.first
+            conn=@available.first
             conn=@reserved.first[-1] if conn.nil?
             conn
           end
