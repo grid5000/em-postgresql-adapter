@@ -39,13 +39,32 @@ module ActiveRecord
         # As quoting is not using the network connection to the dabase but
         # the context to discover encoding, etc, use any connection object
         # and do not attempt to reserve one
+
+        # first the 3 calls that can be found in lib/arel/visitors/to_sql.rb
         def quote(s, column = nil)
           dummy_conn.quote(s)
         end
 
-        #see quote comment
+        def quote_table_name(table_name)
+          dummy_conn.quote_table_name(table_name)
+        end
+
+        def quote_column_name(column_name)
+          dummy_conn.quote_column_name(column_name)
+        end
+        
+        # and then the three calls used for quoting in 
+        # activerecord-3.2.22.5/lib/active_record/connection_adapters/postgresql_adapter.rb
         def escape(s)
           dummy_conn.escape(s)
+        end
+        
+        def escape_bytea(value)
+          dummy_conn.escape_bytea(value) if value
+        end
+        
+        def unescape_bytea(value)
+          dummy_conn.unescape_bytea(value) if value
         end
 
         private
