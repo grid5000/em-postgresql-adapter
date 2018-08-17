@@ -35,6 +35,25 @@ module ActiveRecord
             conn.send(:prepare, *args, &blk)
           end
         end
+
+        # As quoting is not using the network connection to the dabase but
+        # the context to discover encoding, etc, use any connection object
+        # and do not attempt to reserve one
+        def quote(s, column = nil)
+          dummy_conn.quote(s)
+        end
+
+        #see quote comment
+        def escape(s)
+          dummy_conn.escape(s)
+        end
+
+        private
+          def dummy_conn
+            conn=available.first
+            conn=@reserved.first[-1] if conn.nil?
+            conn
+          end
       end
 
       include EM::Synchrony::ActiveRecord::Adapter
