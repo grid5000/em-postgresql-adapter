@@ -75,7 +75,12 @@ module ActiveRecord
           end
       end
 
-      include EM::Synchrony::ActiveRecord::Adapter
+      if ::ActiveRecord.version >= Gem::Version.new('4.2')
+        require 'em-synchrony/activerecord_4_2'
+        include EM::Synchrony::ActiveRecord::Adapter_4_2
+      else
+        include EM::Synchrony::ActiveRecord::Adapter
+      end
 
       def connect
         @connection
@@ -137,7 +142,12 @@ module ActiveRecord
       # Money type has a fixed precision of 10 in PostgreSQL 8.2 and below, and as of
       # PostgreSQL 8.3 it has a fixed precision of 19. PostgreSQLColumn.extract_precision
       # should know about this but can't detect it there, so deal with it here.
-      ActiveRecord::ConnectionAdapters::PostgreSQLColumn.money_precision = (client.server_version >= 80300) ? 19 : 10
+      if ActiveRecord.version < Gem::Version.new('4.2.0')
+        ActiveRecord::ConnectionAdapters::PostgreSQLColumn.money_precision = (client.server_version >= 80300) ? 19 : 10
+      else
+        ActiveRecord::ConnectionAdapters::EMPostgreSQLAdapter::OID::Money.precision = (client.server_version >= 80300) ? 19 : 10
+        # ActiveRecord::ConnectionAdapters::PostgreSQL::OID::Money.precision = (client.server_version >= 80300) ? 19 : 10
+      end
 
       adapter.new(client, logger, options, config)
     end
