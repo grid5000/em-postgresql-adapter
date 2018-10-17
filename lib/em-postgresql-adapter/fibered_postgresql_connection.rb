@@ -53,6 +53,24 @@ module EM
       # def send_query_prepared(statement_name, *params)
       # end
 
+      # When the connection is in use
+      # but the connection pool has been requested to prepare a statement
+      # this metho is called to store the preparation instructions until
+      # the connection is released to the pool
+      def postpone(*args, &blk)
+        @postponed_queries=[] unless @postponed_queries.is_a? Array
+        @postponed_queries.push({:args => args, :blk => blk})
+      end
+
+      def run_postponed_queries
+        @postponed_queries=[] unless @postponed_queries.is_a? Array
+        postponed_query=@postponed_queries.pop
+        until postponed_query.nil? do
+          prepare(*postponed_query[:args], &postponed_query[:blk])
+          postponed_query=@postponed_queries.pop
+        end
+      end
+
     end #FiberedPostgresConnection
   end #DB
 end #EM

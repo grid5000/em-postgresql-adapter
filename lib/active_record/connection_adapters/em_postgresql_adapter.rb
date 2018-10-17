@@ -31,8 +31,27 @@ module ActiveRecord
         def prepare(*args, &blk)
           # Prepare statement across all the connection instances in the pool
           # NOTE: how much of a performance hit will this cause on large pools (i.e. > 200)?)
-          [connection, @available, @pending].flatten.each do |conn|
+          @available.each do |conn|
             conn.send(:prepare, *args, &blk)
+          end
+          @reserved.each do |fiber_id, conn|
+            conn.postpone(*args,&blk)
+          end
+        end
+
+        # Reimplement EM::Synchrony::ActiveRecord::ConnectionPool's execute
+        # to be able to handle postponed prepared statements
+        # consider connection acquired
+        def execute(async)
+          f = Fiber.current
+          begin
+            conn = acquire(f)
+            conn.acquired_for_connection_pool += 1
+            yield conn
+          ensure
+            conn.acquired_for_connection_pool -= 1
+            conn.run_postponed_queries if conn.acquired_for_connection_pool == 0
+            release(f) if !async && conn.acquired_for_connection_pool == 0
           end
         end
 
@@ -117,7 +136,6 @@ module ActiveRecord
 
       client = adapter::ConnectionPool.new(size: poolsize) do
         conn = adapter::Client.connect(*options)
-
         if config[:encoding]
           conn.set_client_encoding(config[:encoding])
         end
