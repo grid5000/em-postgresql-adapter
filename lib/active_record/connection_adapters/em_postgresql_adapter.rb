@@ -162,7 +162,7 @@ module ActiveRecord
       # should know about this but can't detect it there, so deal with it here.
       if ActiveRecord.version < Gem::Version.new('4.2.0')
         ActiveRecord::ConnectionAdapters::PostgreSQLColumn.money_precision = (client.server_version >= 80300) ? 19 : 10
-      else
+      elsif ActiveRecord.version < Gem::Version.new('5.0.0')
         ActiveRecord::ConnectionAdapters::EMPostgreSQLAdapter::OID::Money.precision = (client.server_version >= 80300) ? 19 : 10
         # ActiveRecord::ConnectionAdapters::PostgreSQL::OID::Money.precision = (client.server_version >= 80300) ? 19 : 10
       end
